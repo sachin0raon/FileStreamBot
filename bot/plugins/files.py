@@ -26,10 +26,11 @@ async def handle_user_file(_, msg: Message):
         caption=f'||{secret_code}/{sender_id}||'
     )
     file_id = file.id
-    dl_link = f'{Server.BASE_URL}/dl/{file_id}?code={secret_code}'
+    file_name = file.document.file_name if file.document and file.document.file_name else file.media.value
+    dl_link = f'{Server.BASE_URL}/dl/{file_id}/{file_name}?code={secret_code}'
 
     if (msg.document and 'video' in msg.document.mime_type) or msg.video:
-        stream_link = f'{Server.BASE_URL}/stream/{file_id}?code={secret_code}'
+        stream_link = f'{Server.BASE_URL}/stream/{file_id}/{file_name}?code={secret_code}'
         await msg.reply(
             text=MediaLinksText % {'dl_link': dl_link, 'stream_link': stream_link},
             quote=True,

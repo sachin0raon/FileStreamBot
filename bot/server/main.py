@@ -2,7 +2,7 @@ from quart import Blueprint, Response, request, render_template, redirect
 from math import ceil
 from re import match as re_match
 from .error import abort
-from bot import TelegramBot
+from bot import TelegramBot, logger
 from bot.config import Telegram, Server
 from bot.modules.telegram import get_message, get_file_properties
 
@@ -12,8 +12,9 @@ bp = Blueprint('main', __name__)
 async def home():
     return redirect(f'https://t.me/{Telegram.BOT_USERNAME}')
 
-@bp.route('/dl/<int:file_id>')
-async def transmit_file(file_id):
+@bp.route('/dl/<int:file_id>/<string:name>')
+async def transmit_file(file_id:int, name:str):
+    logger.info(f"Request received to download :: {name}")
     file = await get_message(file_id) or abort(404)
     code = request.args.get('code') or abort(401)
     range_header = request.headers.get('Range')
@@ -77,7 +78,8 @@ async def transmit_file(file_id):
 
     return Response(file_stream(), headers=headers, status=status_code)
 
-@bp.route('/stream/<int:file_id>')
-async def stream_file(file_id):
+@bp.route('/stream/<int:file_id>/<string:name>')
+async def stream_file(file_id:int, name:str):
+    logger.info(f"Request received to stream :: {name}")
     code = request.args.get('code') or abort(401)
-    return await render_template('player.html', mediaLink=f'{Server.BASE_URL}/dl/{file_id}?code={code}')
+    return await render_template('player.html', mediaLink=f'{Server.BASE_URL}/dl/{file_id}/{name}?code={code}')
